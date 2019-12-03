@@ -1,5 +1,5 @@
 import pytest
-from aoc2019.day1 import main
+from aoc2019 import day1
 
 TEST_CASES_CALC_FUEL = (
     # (input, expected)
@@ -17,19 +17,19 @@ TEST_CASES_MOAR_FUEL = (
 )
 
 
-@pytest.mark.parametrize("input,expected", TEST_CASES_CALC_FUEL)
-def test_calculate_fuel(input: int, expected: int) -> None:
-    assert main.calculate_fuel(input) == expected
+@pytest.mark.parametrize("input_,expected", TEST_CASES_CALC_FUEL)
+def test_calculate_fuel(input_: int, expected: int) -> None:
+    assert day1.calculate_fuel(input_) == expected
 
 
-@pytest.mark.parametrize("input,expected", TEST_CASES_MOAR_FUEL)
-def test_moar_fuel(input: int, expected: int) -> None:
-    assert main.moar_fuel(input) == expected
+@pytest.mark.parametrize("input_,expected", TEST_CASES_MOAR_FUEL)
+def test_moar_fuel(input_: int, expected: int) -> None:
+    assert day1.moar_fuel(input_) == expected
 
 
 def test_first_star() -> None:
-    assert main.first_star() == 3365459
+    assert day1.first_star() == 3365459
 
 
 def test_second_star() -> None:
-    assert main.second_star() == 5045301
+    assert day1.second_star() == 5045301
