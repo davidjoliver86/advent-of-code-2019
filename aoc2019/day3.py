@@ -7,8 +7,6 @@ from typing import List, Tuple, Set
 
 
 def _trace_path(path: str) -> List[Tuple]:
-    # pylint: disable=C0103
-    # intentionally using x, y, dx, dy variable names
     steps = path.split(",")
     path = []
     x = 0
@@ -31,7 +29,6 @@ def _trace_path(path: str) -> List[Tuple]:
             x += dx
             y += dy
             path.append((x, y))
-    # pylint: enable=C0103
     return path
 
 
