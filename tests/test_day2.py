@@ -4,6 +4,7 @@ Test cases for day 2
 from typing import List
 import pytest
 from aoc2019 import day2
+from aoc2019.intcode import Intcode
 
 TEST_CASES_INTCODE = (
     # (input, expected)
@@ -19,7 +20,7 @@ def test_run_intcode(initial: List, expected: List) -> None:
     """
     Run a sample Intcode program and verify the final state of the program after calling halt.
     """
-    program = day2.Intcode(initial)
+    program = Intcode(initial)
     program.run()
     assert program.get_program() == expected
 

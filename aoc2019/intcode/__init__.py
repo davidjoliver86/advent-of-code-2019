@@ -8,6 +8,8 @@ from typing import List, Callable, Tuple
 
 ADD = 1
 MULTIPLY = 2
+INPUT = 3
+OUTPUT = 4
 HALT = 99
 
 MODE_POSITION = 0
@@ -30,17 +32,19 @@ class Intcode:
     Intcode programs take in a comma-separated list of integers
     """
 
-    def __init__(self, initial: List) -> None:
+    def __init__(self, initial: List, input_stack: List = None) -> None:
         self._program: List = initial
         self._index: int = 0
         self._halted: bool = False
+        self._input_stack = input_stack or []
 
-    def _get_parameter(self, mode: int, value: int) -> int:
+    def _get_parameter(self, mode: int, index_increment: int) -> int:
         """
         Value is taken as one of the parameters of the opcode.
         If that particular parameter is in "immediate" mode - just return the value.
         If it's in "position" mode - return the value at the "index" of 'value'.
         """
+        value = self._program[self._index + index_increment]
         if mode == MODE_IMMEDIATE:
             return value
         if mode == MODE_POSITION:
@@ -50,12 +54,15 @@ class Intcode:
     def _get_opcode(self) -> Opcode:
         return _parse_opcode(self._program[self._index])
 
-    def _set_value_at_index(self, index: int, value: int):
+    def _set_value_at_index(self, index_increment: int, value: int):
         """
         Look up the value at index - then set *that* index to value.
         """
-        lookup = self._program[index]
+        lookup = self._program[self._index + index_increment]
         self._program[lookup] = value
+
+    def _pop_input(self):
+        return self._input_stack.pop(0)
 
     def run(self) -> None:
         """
@@ -64,15 +71,23 @@ class Intcode:
         while not self._halted:
             opcode = self._get_opcode()
             if opcode.instruction == ADD:
-                p1 = self._get_parameter(opcode.mode_1, self._program[self._index + 1])
-                p2 = self._get_parameter(opcode.mode_2, self._program[self._index + 2])
-                self._set_value_at_index(self._index + 3, p1 + p2)
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                p2 = self._get_parameter(opcode.mode_2, 2)
+                self._set_value_at_index(3, p1 + p2)
                 self._index += 4
             if opcode.instruction == MULTIPLY:
-                p1 = self._get_parameter(opcode.mode_1, self._program[self._index + 1])
-                p2 = self._get_parameter(opcode.mode_2, self._program[self._index + 2])
-                self._set_value_at_index(self._index + 3, p1 * p2)
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                p2 = self._get_parameter(opcode.mode_2, 2)
+                self._set_value_at_index(3, p1 * p2)
                 self._index += 4
+            if opcode.instruction == INPUT:
+                input_value = self._pop_input()
+                self._set_value_at_index(1, input_value)
+                self._index += 2
+            if opcode.instruction == OUTPUT:
+                value = self._get_parameter(opcode.mode_1, 1)
+                print(value)
+                self._index += 2
             if opcode.instruction == HALT:
                 self._halted = True
 
