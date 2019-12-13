@@ -10,6 +10,10 @@ ADD = 1
 MULTIPLY = 2
 INPUT = 3
 OUTPUT = 4
+JUMP_IF_TRUE = 5
+JUMP_IF_FALSE = 6
+LESS_THAN = 7
+EQUALS = 8
 HALT = 99
 
 MODE_POSITION = 0
@@ -37,6 +41,7 @@ class Intcode:
         self._index: int = 0
         self._halted: bool = False
         self._input_stack = input_stack or []
+        self._output_history = []  # mainly to make testing easier
 
     def _get_parameter(self, mode: int, index_increment: int) -> int:
         """
@@ -70,24 +75,38 @@ class Intcode:
         """
         while not self._halted:
             opcode = self._get_opcode()
-            if opcode.instruction == ADD:
+            if opcode.instruction in (ADD, MULTIPLY):
                 p1 = self._get_parameter(opcode.mode_1, 1)
                 p2 = self._get_parameter(opcode.mode_2, 2)
-                self._set_value_at_index(3, p1 + p2)
-                self._index += 4
-            if opcode.instruction == MULTIPLY:
-                p1 = self._get_parameter(opcode.mode_1, 1)
-                p2 = self._get_parameter(opcode.mode_2, 2)
-                self._set_value_at_index(3, p1 * p2)
+                func = operator.add if opcode.instruction == ADD else operator.mul
+                self._set_value_at_index(3, func(p1, p2))
                 self._index += 4
             if opcode.instruction == INPUT:
                 input_value = self._pop_input()
                 self._set_value_at_index(1, input_value)
                 self._index += 2
             if opcode.instruction == OUTPUT:
-                value = self._get_parameter(opcode.mode_1, 1)
-                print(value)
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                print(p1)
+                self._output_history.append(p1)
                 self._index += 2
+            if opcode.instruction in (JUMP_IF_TRUE, JUMP_IF_FALSE):
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                p2 = self._get_parameter(opcode.mode_2, 2)
+                func = (
+                    operator.ne if opcode.instruction == JUMP_IF_TRUE else operator.eq
+                )
+                if func(p1, 0):
+                    self._index = p2
+                else:
+                    self._index += 3
+            if opcode.instruction in (LESS_THAN, EQUALS):
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                p2 = self._get_parameter(opcode.mode_2, 2)
+                func = operator.lt if opcode.instruction == LESS_THAN else operator.eq
+                value = 1 if func(p1, p2) else 0
+                self._set_value_at_index(3, value)
+                self._index += 4
             if opcode.instruction == HALT:
                 self._halted = True
 
@@ -96,3 +115,6 @@ class Intcode:
         Returns the state of the program.
         """
         return self._program
+
+    def get_output_history(self) -> List[int]:
+        return self._output_history
