@@ -6,6 +6,11 @@ import pathlib
 
 
 class Orbit(dict):
+    """
+    Each object in space orbits exactly one other object.
+    Represented as a dict where the key is what *is orbited* and value is what *orbits* it.
+    Multiple objects can orbit one other object.
+    """
 
     _orbit_count_cache = {}
 
