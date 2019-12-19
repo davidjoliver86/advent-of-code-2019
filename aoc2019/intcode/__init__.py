@@ -66,8 +66,14 @@ class Intcode:
         lookup = self._program[self._index + index_increment]
         self._program[lookup] = value
 
-    def _pop_input(self):
+    def _pop_input(self) -> int:
         return self._input_stack.pop(0)
+
+    def push_input(self, val: int) -> None:
+        self._input_stack.append(val)
+
+    def halted(self) -> bool:
+        return self._halted
 
     def run(self) -> None:
         """
@@ -82,7 +88,10 @@ class Intcode:
                 self._set_value_at_index(3, func(p1, p2))
                 self._index += 4
             if opcode.instruction == INPUT:
-                input_value = self._pop_input()
+                try:
+                    input_value = self._pop_input()
+                except IndexError:
+                    return
                 self._set_value_at_index(1, input_value)
                 self._index += 2
             if opcode.instruction == OUTPUT:

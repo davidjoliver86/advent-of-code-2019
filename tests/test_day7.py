@@ -1,8 +1,8 @@
 """
 Test cases for day 7
 """
-import pytest
 from typing import List
+import pytest
 from aoc2019 import day7
 
 TEST_CASES_MAX_SIGNAL = (
@@ -39,7 +39,7 @@ TEST_CASES_MAX_SIGNAL = (
             0,
             0,
         ],
-        day7.Signal([0, 1, 2, 3, 4], 54321),
+        day7.Signal((0, 1, 2, 3, 4), 54321),
     ),
     (
         [
@@ -78,11 +78,115 @@ TEST_CASES_MAX_SIGNAL = (
             0,
             0,
         ],
-        day7.Signal([1, 0, 4, 3, 2], 65210),
+        day7.Signal((1, 0, 4, 3, 2), 65210),
+    ),
+)
+
+TEST_CASES_SIGNAL_FEEDBACK_LOOP = (
+    (
+        [
+            3,
+            26,
+            1001,
+            26,
+            -4,
+            26,
+            3,
+            27,
+            1002,
+            27,
+            2,
+            27,
+            1,
+            27,
+            26,
+            27,
+            4,
+            27,
+            1001,
+            28,
+            -1,
+            28,
+            1005,
+            28,
+            6,
+            99,
+            0,
+            0,
+            5,
+        ],
+        day7.Signal((9, 8, 7, 6, 5), 139629729),
+    ),
+    (
+        [
+            3,
+            52,
+            1001,
+            52,
+            -5,
+            52,
+            3,
+            53,
+            1,
+            52,
+            56,
+            54,
+            1007,
+            54,
+            5,
+            55,
+            1005,
+            55,
+            26,
+            1001,
+            54,
+            -5,
+            54,
+            1105,
+            1,
+            12,
+            1,
+            53,
+            54,
+            53,
+            1008,
+            54,
+            0,
+            55,
+            1001,
+            55,
+            1,
+            55,
+            2,
+            53,
+            55,
+            53,
+            4,
+            53,
+            1001,
+            56,
+            -1,
+            56,
+            1005,
+            56,
+            6,
+            99,
+            0,
+            0,
+            0,
+            0,
+            10,
+        ],
+        day7.Signal((9, 7, 8, 5, 6), 18216),
     ),
 )
 
 
 @pytest.mark.parametrize("program,signal", TEST_CASES_MAX_SIGNAL)
 def test_max_signal(program: List[int], signal: day7.Signal):
-    assert day7.find_max_signal(program) == signal
+    assert day7.find_max_signal(program, day7.SINGLE_PASS) == signal
+
+
+@pytest.mark.parametrize("program,signal", TEST_CASES_SIGNAL_FEEDBACK_LOOP)
+def test_max_signal_feedback_loop(program: List[int], signal: day7.Signal):
+    assert day7.find_max_signal(program, day7.FEEDBACK_LOOP) == signal
