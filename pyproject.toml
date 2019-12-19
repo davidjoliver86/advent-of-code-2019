@@ -9,7 +9,7 @@ python = "^3.8"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.3"
-black = {version = "^19.0", allows-prereleases = true}
+black = {version = "^19.0", allow-prereleases = true}
 ipdb = "^0.12.2"
 pylint = "^2.4"
 
