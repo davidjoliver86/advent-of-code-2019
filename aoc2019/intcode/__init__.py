@@ -3,7 +3,7 @@ Intcode interpreter
 """
 import operator
 import collections
-from typing import List, Callable, Tuple
+from typing import List, Callable, Tuple, Union
 
 
 ADD = 1
@@ -14,10 +14,12 @@ JUMP_IF_TRUE = 5
 JUMP_IF_FALSE = 6
 LESS_THAN = 7
 EQUALS = 8
+ADJ_RELATIVE_BASE = 9
 HALT = 99
 
 MODE_POSITION = 0
 MODE_IMMEDIATE = 1
+MODE_RELATIVE = 2
 
 
 Opcode = collections.namedtuple("Opcode", ["mode_1", "mode_2", "mode_3", "instruction"])
@@ -36,9 +38,13 @@ class Intcode:
     Intcode programs take in a comma-separated list of integers
     """
 
-    def __init__(self, initial: List, input_stack: List = None) -> None:
-        self._program: List = initial
+    def __init__(self, data: Union[List, str], input_stack: List = None) -> None:
+        if isinstance(data, list):
+            self._program: List = data
+        elif isinstance(data, str):
+            self._program: List = [int(x) for x in data.split(",")]
         self._index: int = 0
+        self._relative_base: int = 0
         self._halted: bool = False
         self._input_stack = input_stack or []
         self._output_history = []  # mainly to make testing easier
@@ -53,18 +59,44 @@ class Intcode:
         if mode == MODE_IMMEDIATE:
             return value
         if mode == MODE_POSITION:
-            return self._program[value]
+            return self._get_value_at_index(value)
+        if mode == MODE_RELATIVE:
+            return self._get_value_at_index(value + self._relative_base)
         raise ValueError("you dun goofed your parameter modes")
+
+    def _expand(self, index: int) -> None:
+        target_length = index + 1 - len(self._program)
+        self._program.extend([0] * target_length)
+
+    def _get_value_at_index(self, index: int) -> int:
+        try:
+            return self._program[index]
+        except IndexError:
+            self._expand(index)
+            return self._program[index]
 
     def _get_opcode(self) -> Opcode:
         return _parse_opcode(self._program[self._index])
 
-    def _set_value_at_index(self, index_increment: int, value: int):
+    def _set_value_at_index(
+        self, index_increment: int, value: int, relative_offset: bool = False
+    ):
         """
         Look up the value at index - then set *that* index to value.
+
+        index_increment: Steps after self._index to lookup the value.
+        value: The value to set.
+        relative_offset: If True, add the relative base to the index retrieved (not the index
+            *to* retrieve*).
         """
         lookup = self._program[self._index + index_increment]
-        self._program[lookup] = value
+        if relative_offset:
+            lookup += self._relative_base
+        try:
+            self._program[lookup] = value
+        except IndexError:
+            self._expand(lookup)
+            self._program[lookup] = value
 
     def _pop_input(self) -> int:
         return self._input_stack.pop(0)
@@ -85,14 +117,16 @@ class Intcode:
                 p1 = self._get_parameter(opcode.mode_1, 1)
                 p2 = self._get_parameter(opcode.mode_2, 2)
                 func = operator.add if opcode.instruction == ADD else operator.mul
-                self._set_value_at_index(3, func(p1, p2))
+                self._set_value_at_index(
+                    3, func(p1, p2), opcode.mode_3 == MODE_RELATIVE
+                )
                 self._index += 4
             if opcode.instruction == INPUT:
                 try:
                     input_value = self._pop_input()
                 except IndexError:
-                    return
-                self._set_value_at_index(1, input_value)
+                    return  # blocks for more input
+                self._set_value_at_index(1, input_value, opcode.mode_1 == MODE_RELATIVE)
                 self._index += 2
             if opcode.instruction == OUTPUT:
                 p1 = self._get_parameter(opcode.mode_1, 1)
@@ -114,10 +148,14 @@ class Intcode:
                 p2 = self._get_parameter(opcode.mode_2, 2)
                 func = operator.lt if opcode.instruction == LESS_THAN else operator.eq
                 value = 1 if func(p1, p2) else 0
-                self._set_value_at_index(3, value)
+                self._set_value_at_index(3, value, opcode.mode_3 == MODE_RELATIVE)
                 self._index += 4
             if opcode.instruction == HALT:
                 self._halted = True
+            if opcode.instruction == ADJ_RELATIVE_BASE:
+                p1 = self._get_parameter(opcode.mode_1, 1)
+                self._relative_base += p1
+                self._index += 2
 
     def get_program(self) -> List:
         """
