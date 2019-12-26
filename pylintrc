@@ -1,2 +1,3 @@
 [MESSAGES CONTROL]
 disable=C0103,C0116
+max-line-length=120

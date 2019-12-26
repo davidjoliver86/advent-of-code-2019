@@ -1,4 +1,7 @@
-from typing import List, Tuple
+"""
+Day 8: Space Image Format
+"""
+from typing import List
 import pathlib
 import itertools
 import collections
@@ -10,10 +13,7 @@ TRANSPARENT = "2"
 
 def create_layers(image_data: str, length: int, height: int) -> List[str]:
     layer_size = length * height
-    return [
-        "".join(layer)
-        for layer in itertools.zip_longest(*[iter(image_data)] * layer_size)
-    ]
+    return ["".join(layer) for layer in itertools.zip_longest(*[iter(image_data)] * layer_size)]
 
 
 def layer_pixel_data(layers: List[str]) -> List[collections.Counter]:

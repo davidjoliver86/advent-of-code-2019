@@ -78,9 +78,7 @@ class Intcode:
     def _get_opcode(self) -> Opcode:
         return _parse_opcode(self._program[self._index])
 
-    def _set_value_at_index(
-        self, index_increment: int, value: int, relative_offset: bool = False
-    ):
+    def _set_value_at_index(self, index_increment: int, value: int, relative_offset: bool = False):
         """
         Look up the value at index - then set *that* index to value.
 
@@ -117,9 +115,7 @@ class Intcode:
                 p1 = self._get_parameter(opcode.mode_1, 1)
                 p2 = self._get_parameter(opcode.mode_2, 2)
                 func = operator.add if opcode.instruction == ADD else operator.mul
-                self._set_value_at_index(
-                    3, func(p1, p2), opcode.mode_3 == MODE_RELATIVE
-                )
+                self._set_value_at_index(3, func(p1, p2), opcode.mode_3 == MODE_RELATIVE)
                 self._index += 4
             if opcode.instruction == INPUT:
                 try:
@@ -136,9 +132,7 @@ class Intcode:
             if opcode.instruction in (JUMP_IF_TRUE, JUMP_IF_FALSE):
                 p1 = self._get_parameter(opcode.mode_1, 1)
                 p2 = self._get_parameter(opcode.mode_2, 2)
-                func = (
-                    operator.ne if opcode.instruction == JUMP_IF_TRUE else operator.eq
-                )
+                func = operator.ne if opcode.instruction == JUMP_IF_TRUE else operator.eq
                 if func(p1, 0):
                     self._index = p2
                 else:
