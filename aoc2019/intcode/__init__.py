@@ -105,7 +105,7 @@ class Intcode:
     def halted(self) -> bool:
         return self._halted
 
-    def run(self) -> None:
+    def run(self, suppress_output: bool = False) -> None:
         """
         Runs the intcode program until it reaches a halt command.
         """
@@ -126,7 +126,8 @@ class Intcode:
                 self._index += 2
             if opcode.instruction == OUTPUT:
                 p1 = self._get_parameter(opcode.mode_1, 1)
-                print(p1)
+                if not suppress_output:
+                    print(p1)
                 self._output_history.append(p1)
                 self._index += 2
             if opcode.instruction in (JUMP_IF_TRUE, JUMP_IF_FALSE):
