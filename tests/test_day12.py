@@ -25,3 +25,16 @@ def test_one_step():
         "pos=<x=1, y=-7, z=5>, vel=<x=-3, y=1, z=-3>",
         "pos=<x=2, y=2, z=0>, vel=<x=-1, y=-3, z=1>",
     ]
+
+
+def test_ten_steps():
+    moons = [Moon(-1, 0, 2), Moon(2, -10, -7), Moon(4, -8, 8), Moon(3, 5, -1)]
+    for _ in range(10):
+        run_step(moons)
+    reprs = [str(moon) for moon in moons]
+    assert reprs == [
+        "pos=<x=2, y=1, z=-3>, vel=<x=-3, y=-2, z=1>",
+        "pos=<x=1, y=-8, z=0>, vel=<x=-1, y=1, z=3>",
+        "pos=<x=3, y=-6, z=1>, vel=<x=3, y=2, z=-3>",
+        "pos=<x=2, y=0, z=4>, vel=<x=1, y=-1, z=-1>",
+    ]
