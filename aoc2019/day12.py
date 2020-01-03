@@ -1,4 +1,9 @@
+"""
+Day 12: The N-Body Problem
+"""
+import math
 import re
+import functools
 from typing import Iterable
 from itertools import combinations
 
@@ -9,15 +14,12 @@ INPUT = """
 <x=-3, y=0, z=-13>
 """
 
-TEN_STEP_TEST_CASE = """
-<x=-1, y=0, z=2>
-<x=2, y=-10, z=-7>
-<x=4, y=-8, z=8>
-<x=3, y=5, z=-1>
-"""
-
 
 class Moon:
+    """
+    Represents a moon with 3 dimensions of position and velocity.
+    """
+
     x: int = 0
     y: int = 0
     z: int = 0
@@ -96,19 +98,25 @@ def first_star():
 
 
 def second_star():
-    moons = list(create_moons(TEN_STEP_TEST_CASE))
-    states = set()
-    steps = 0
-    while True:
-        state = tuple(
-            [(moon.x, moon.y, moon.z, moon.v_x, moon.v_y, moon.v_z) for moon in moons]
-        )
-        if state in states:
-            break
-        states.add(state)
-        run_step(moons)
-        steps += 1
-    print(steps)
+    steps = []
+    for attribute in "xyz":
+        moons = list(create_moons(INPUT))
+        initial_position = [getattr(moon, attribute) for moon in moons]
+        initial_velocity = [getattr(moon, f"v_{attribute}") for moon in moons]
+        dimension_steps = 0
+        while True:
+            run_step(moons)
+            dimension_steps += 1
+            positions = [getattr(moon, attribute) for moon in moons]
+            velocities = [getattr(moon, f"v_{attribute}") for moon in moons]
+            if positions == initial_position and velocities == initial_velocity:
+                steps.append(dimension_steps)
+                break
+    print(functools.reduce(lcm, steps))
+
+
+def lcm(a: int, b: int) -> int:
+    return (a * b) // math.gcd(a, b)
 
 
 if __name__ == "__main__":
